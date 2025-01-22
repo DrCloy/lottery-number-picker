@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "client": "cd lottery-frontend && npm run dev"
+    "client": "cd lottery-frontend && npm run dev",
+    "server": "npx json-server --watch db.json --port 3000"
   },
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "json-server": "^1.0.0-beta.3"
+  }
 }
