@@ -1,0 +1,11 @@
+{
+  "name": "lottery-number-picker",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "client": "cd lottery-frontend && npm run dev"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
