@@ -65,6 +65,8 @@ export default function LotteryCard({ lottery }: { lottery: LotteryModel }) {
         <div className="w-full flex flex-col items-center space-y-2">
           <p>추첨 일자: {formatDate(lottery.date)}</p>
           <p>당첨 금액: {lottery.prize.toLocaleString()}원</p>
+          <p>당첨자 수: {lottery.winners.toLocaleString()}명</p>
+          <p>1인 당 당첨 금액: {Math.floor(lottery.prize / lottery.winners).toLocaleString()}원</p>
         </div>
       )}
     </div>
