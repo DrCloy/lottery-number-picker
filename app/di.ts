@@ -1,5 +1,10 @@
-import { LotteryService, type LotteryRepository } from "./data";
+import { LotteryService, type LotteryRepository } from "./lotteryService";
 import { LotteryRepositoryImpl } from "./lotteryRepositoryImpl";
 
 const lotteryRepository: LotteryRepository = new LotteryRepositoryImpl();
-export const lotteryService = new LotteryService(lotteryRepository);
+const lotteryService = new LotteryService(lotteryRepository);
+
+export const di = {
+  lotteryService,
+  lotteryRepository,
+};

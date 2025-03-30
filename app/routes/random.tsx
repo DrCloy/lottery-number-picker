@@ -1,45 +1,8 @@
 import { Form } from "react-router";
 import type { Route } from "./+types/random";
 import { useRef } from "react";
-
-const useConditionRef = () => {
-  const conditionIncludeRef = useRef<HTMLInputElement>(null);
-  const conditionExcludeRef = useRef<HTMLInputElement>(null);
-  const conditionTopRef = useRef<HTMLInputElement>(null);
-
-  const setCondition = (name: string, checked: boolean) => {
-    switch (name) {
-      case "condition_include":
-        if (checked && conditionTopRef.current) {
-          conditionTopRef.current.checked = false;
-        }
-        conditionIncludeRef.current!.checked = checked;
-        break;
-      case "condition_exclude":
-        if (checked && conditionTopRef.current) {
-          conditionTopRef.current.checked = false;
-        }
-        conditionExcludeRef.current!.checked = checked;
-        break;
-      case "condition_top":
-        if (checked) {
-          if (conditionIncludeRef.current) conditionIncludeRef.current.checked = false;
-          if (conditionExcludeRef.current) conditionExcludeRef.current.checked = false;
-        }
-        conditionTopRef.current!.checked = checked;
-        break;
-    }
-  };
-
-  return {
-    conditionRef: {
-      conditionIncludeRef,
-      conditionExcludeRef,
-      conditionTopRef,
-    },
-    setCondition,
-  };
-};
+import { useObservable } from "~/useObservable";
+import { di } from "~/di";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -48,12 +11,9 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export function loader({ context }: Route.LoaderArgs) {
-  return { message: "Hello from Vercel" };
-}
-
-export default function Random({ loaderData }: Route.ComponentProps) {
-  const { conditionRef, setCondition } = useConditionRef();
+export default function Random() {
+  const lotteryService = useObservable(di.lotteryService);
+  const generatedNumbers = lotteryService.getGeneratedRandomNumbers();
 
   return (
     <>
@@ -67,9 +27,8 @@ export default function Random({ loaderData }: Route.ComponentProps) {
                 <input
                   type="checkbox"
                   name="condition_include"
-                  value="condition_include"
-                  onChange={(e) => setCondition(e.target.name, e.target.checked)}
-                  ref={conditionRef.conditionIncludeRef}
+                  checked={lotteryService.getIsIncludeSelected()}
+                  onChange={() => lotteryService.selectIncludeNumbers()}
                 />
                 <label>특정 번호 포함</label>
               </div>
@@ -77,9 +36,8 @@ export default function Random({ loaderData }: Route.ComponentProps) {
                 <input
                   type="checkbox"
                   name="condition_exclude"
-                  value="condition_exclude"
-                  onChange={(e) => setCondition(e.target.name, e.target.checked)}
-                  ref={conditionRef.conditionExcludeRef}
+                  checked={lotteryService.getIsExcludeSelected()}
+                  onChange={() => lotteryService.selectExcludeNumbers()}
                 />
                 <label>특정 번호 제외</label>
               </div>
@@ -87,22 +45,54 @@ export default function Random({ loaderData }: Route.ComponentProps) {
                 <input
                   type="checkbox"
                   name="condition_top"
-                  value="condition_top"
-                  onChange={(e) => setCondition(e.target.name, e.target.checked)}
-                  ref={conditionRef.conditionTopRef}
+                  checked={lotteryService.getIsMostWinningSelected()}
+                  onChange={() => lotteryService.selectMostWinningNumbers()}
                 />
                 <label>최다 당첨 번호</label>
               </div>
             </div>
             <div>
               <label>포함할 번호</label>
-              <select>
-                {Array.from({ length: 45 }, (_, i) => (
-                  <option key={i}>{i + 1}</option>
-                ))}
-              </select>
+              <input
+                type="text"
+                name="include_numbers"
+                value={lotteryService.getIncludedNumberString()}
+                onChange={(e) => lotteryService.setIncludedNumberString(e.target.value)}
+                disabled={!lotteryService.getIsIncludeSelected()}
+                className="border-2 border-gray-400 dark:border-gray-500 rounded p-2 disabled:opacity-50"
+                placeholder="ex) 1,2,3,4,5"
+              />
+              <label>제외할 번호</label>
+              <input
+                type="text"
+                name="exclude_numbers"
+                value={lotteryService.getExcludedNumberString()}
+                onChange={(e) => lotteryService.setExcludedNumberString(e.target.value)}
+                disabled={!lotteryService.getIsExcludeSelected()}
+                className="border-2 border-gray-400 dark:border-gray-500 rounded p-2 disabled:opacity-50"
+                placeholder="ex) 1,2,3,4,5"
+              />
+              <button
+                className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                onClick={() => lotteryService.generateRandomNumbers()}
+              >
+                Generate Random Numbers
+              </button>
             </div>
           </Form>
+
+          {generatedNumbers.length > 0 && (
+            <div className="mt-4">
+              <h3 className="font-bold">생성된 번호</h3>
+              <div className="flex space-x-2">
+                {generatedNumbers.map((number, index) => (
+                  <span key={index} className="bg-gray-200 dark:bg-gray-700 p-2 rounded">
+                    {number}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { LotteryModel } from "~/data";
+import type { LotteryModel } from "~/lotteryService";
 import LotteryBall from "./LotteryBall";
 
 function formatDate(date: Date) {

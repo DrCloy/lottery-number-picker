@@ -1,5 +1,5 @@
 import * as LotteryData from "../db.json";
-import type { LotteryModel, LotteryRepository } from "./data";
+import type { LotteryModel, LotteryRepository } from "./lotteryService";
 
 export class LotteryRepositoryImpl implements LotteryRepository {
   private lotteries: LotteryModel[] = [];
