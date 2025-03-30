@@ -28,7 +28,7 @@ export default function Layout() {
           </li>
         </ul>
       </nav>
-      <main className="w-full grow-1 flex flex-col items-center mt-40">
+      <main className="w-full grow-1 flex flex-col items-center mt-35">
         <Outlet />
       </main>
       <footer className="w-full text-sm bg-gray-300 dark:bg-gray-600 text-black dark:text-gray-300 shrink-0 mt-4">
