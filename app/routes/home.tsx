@@ -1,6 +1,7 @@
-import { getLotteries } from "~/data";
+import { di } from "~/di";
 import type { Route } from "./+types/home";
 import LotteryCard from "~/components/LotteryCard";
+import { useObservable } from "~/useObservable";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -9,13 +10,9 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export async function loader() {
-  const lotteries = await getLotteries();
-  return { lotteries };
-}
-
-export default function Home({ loaderData }: Route.ComponentProps) {
-  const { lotteries } = loaderData;
+export default function Home() {
+  const lotteryService = useObservable(di.lotteryService);
+  const lotteries = lotteryService.getAllLotteries();
 
   return (
     <div className="container flex justify-center items-center h-full w-full bg-gray-100 dark:bg-gray-600 rounded-xl p-2">
