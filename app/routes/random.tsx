@@ -1,8 +1,8 @@
 import { Form } from "react-router";
 import type { Route } from "./+types/random";
-import { useRef } from "react";
 import { useObservable } from "~/useObservable";
 import { di } from "~/di";
+import LotteryBall from "~/components/LotteryBall";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -11,6 +11,58 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
+const LotteryNumberSelect = ({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: number;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  disabled: boolean;
+}) => {
+  return (
+    <select
+      className="border-2 border-gray-400 dark:border-gray-500 rounded p-2 disabled:opacity-50"
+      value={value}
+      onChange={onChange}
+      disabled={disabled}
+    >
+      {[...Array(46).keys()].map((num) => (
+        <option key={num} value={num}>
+          {num === 0 ? "---" : num}
+        </option>
+      ))}
+    </select>
+  );
+};
+
+const LotteryNumberSelectBar = ({
+  numbers,
+  onChange,
+  disabled,
+}: {
+  numbers: number[];
+  onChange: (numbers: number[]) => void;
+  disabled: boolean;
+}) => {
+  return (
+    <div className="flex space-x-2">
+      {[...Array(6).keys()].map((index) => (
+        <LotteryNumberSelect
+          key={index}
+          value={numbers[index]}
+          onChange={(e) => {
+            const newNumbers = [...numbers];
+            newNumbers[index] = parseInt(e.target.value, 10);
+            onChange(newNumbers);
+          }}
+          disabled={disabled}
+        />
+      ))}
+    </div>
+  );
+};
+
 export default function Random() {
   const lotteryService = useObservable(di.lotteryService);
   const generatedNumbers = lotteryService.getGeneratedRandomNumbers();
@@ -18,9 +70,9 @@ export default function Random() {
   return (
     <>
       <div className="container flex flex-col items-center">
-        <h2 className="font-bold text-2xl">랜덤 번호 생성</h2>
+        <h2 className="font-bold text-2xl">무작위 번호 추첨</h2>
         <div className="m-2 p-4 w-full h-50% flex flex-col bg-gray-300 dark:bg-gray-600 rounded border-2 border-gray-400 dark:border-gray-500">
-          <Form className="flex flex-col">
+          <div className="flex flex-col">
             <div className="flex space-x-4">
               <label className="font-bold">조건을 선택해주세요</label>
               <div className="flex space-x-2">
@@ -51,44 +103,38 @@ export default function Random() {
                 <label>최다 당첨 번호</label>
               </div>
             </div>
-            <div>
-              <label>포함할 번호</label>
-              <input
-                type="text"
-                name="include_numbers"
-                value={lotteryService.getIncludedNumberString()}
-                onChange={(e) => lotteryService.setIncludedNumberString(e.target.value)}
+            <div className="flex flex-col space-y-2 mt-4">
+              <label className="font-semibold" htmlFor="lottery_numbers">
+                포함할 번호
+              </label>
+              <LotteryNumberSelectBar
+                numbers={lotteryService.getIncludedNumbers()}
+                onChange={(newNumbers) => lotteryService.setIncludedNumbers(newNumbers)}
                 disabled={!lotteryService.getIsIncludeSelected()}
-                className="border-2 border-gray-400 dark:border-gray-500 rounded p-2 disabled:opacity-50"
-                placeholder="ex) 1,2,3,4,5"
               />
-              <label>제외할 번호</label>
-              <input
-                type="text"
-                name="exclude_numbers"
-                value={lotteryService.getExcludedNumberString()}
-                onChange={(e) => lotteryService.setExcludedNumberString(e.target.value)}
+              <label className="font-semibold mt-4" htmlFor="lottery_numbers">
+                제외할 번호
+              </label>
+              <LotteryNumberSelectBar
+                numbers={lotteryService.getExcludedNumbers()}
+                onChange={(newNumbers) => lotteryService.setExcludedNumbers(newNumbers)}
                 disabled={!lotteryService.getIsExcludeSelected()}
-                className="border-2 border-gray-400 dark:border-gray-500 rounded p-2 disabled:opacity-50"
-                placeholder="ex) 1,2,3,4,5"
               />
-              <button
-                className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                onClick={() => lotteryService.generateRandomNumbers()}
-              >
-                Generate Random Numbers
-              </button>
             </div>
-          </Form>
+            <button
+              className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              onClick={() => lotteryService.generateRandomNumbers()}
+            >
+              번호 생성하기
+            </button>
+          </div>
 
           {generatedNumbers.length > 0 && (
             <div className="mt-4">
               <h3 className="font-bold">생성된 번호</h3>
-              <div className="flex space-x-2">
+              <div className="flex space-x-2 mt-2">
                 {generatedNumbers.map((number, index) => (
-                  <span key={index} className="bg-gray-200 dark:bg-gray-700 p-2 rounded">
-                    {number}
-                  </span>
+                  <LotteryBall key={index} number={number} />
                 ))}
               </div>
             </div>

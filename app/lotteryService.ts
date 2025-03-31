@@ -12,8 +12,8 @@ type RandomNumberCondition = {
   isMostWinning: boolean;
   isInclude: boolean;
   isExclude: boolean;
-  includedNumberString: string;
-  excludedNumberString: string;
+  includedNumbers: number[];
+  excludedNumbers: number[];
 };
 
 export interface LotteryRepository {
@@ -28,8 +28,8 @@ export class LotteryService extends Observable {
     isMostWinning: false,
     isInclude: false,
     isExclude: false,
-    includedNumberString: "",
-    excludedNumberString: "",
+    includedNumbers: [],
+    excludedNumbers: [],
   };
   private generatedRandomNumbers: number[] = [];
 
@@ -38,76 +38,42 @@ export class LotteryService extends Observable {
     this.lotteryDB = lotteryDB;
   }
 
-  private isNumberStringValid(numberString: string): boolean {
-    // Only accept numbers, spaces, commas
-    const regex = /^[0-9\s,]*$/;
-    const test = regex.test(numberString);
-    if (!test) return false;
-
-    // Parse
-    const numbers = numberString
-      .split(",")
-      .map((num) => num.trim())
-      .filter((num) => num !== "")
-      .map((num) => parseInt(num, 10))
-      .filter((num) => !isNaN(num));
-
-    // Check if numbers all numbers are between 1 and 45
-    const isValid = numbers.every((num) => num >= 1 && num <= 45);
-    if (!isValid) return false;
-
-    return true;
-  }
-
   private async getRandomNumbers(): Promise<number[]> {
-    // if (condition.type === "most-winning") {
-    //   // Get the most winning number combination from the database
-    //   const lotteries = await this.lotteryDB.getAllLotteries();
-    //   const numbersCount = new Map<string, number>();
+    const lotteries = await this.lotteryDB.getAllLotteries();
 
-    //   lotteries.forEach((lottery) => {
-    //     const key = lottery.numbers.join(",");
-    //     numbersCount.set(key, (numbersCount.get(key) || 0) + 1);
-    //   });
+    if (this.condition.isMostWinning) {
+      const numbersCount = new Map<string, number>();
 
-    //   const mostWinningNumbers = Array.from(numbersCount.entries()).sort(
-    //     (a, b) => b[1] - a[1]
-    //   )[0][0];
-    //   return mostWinningNumbers.split(",").map((number) => parseInt(number, 10));
-    // }
+      lotteries.forEach((lottery) => {
+        const key = lottery.numbers.join(",");
+        numbersCount.set(key, (numbersCount.get(key) || 0) + 1);
+      });
 
-    // const randomNumbers = [] as number[];
+      const mostWinningNumbers = Array.from(numbersCount.entries()).sort(
+        (a, b) => b[1] - a[1]
+      )[0][0];
 
-    // if (condition.type === "include") {
-    //   // Include the specified numbers
-    //   randomNumbers.push(...condition.numbers);
-    // }
+      return mostWinningNumbers.split(",").map((number) => parseInt(number, 10));
+    }
 
-    // // Generate 6 random numbers
-    // while (randomNumbers.length < 6) {
-    //   const randomNumber = Math.floor(Math.random() * 45) + 1;
+    const randomNumbers: number[] = [];
+    if (this.condition.isInclude) {
+      randomNumbers.push(...this.condition.includedNumbers.filter((num) => num !== 0));
+    }
 
-    //   if (condition.type === "exclude" && condition.numbers.includes(randomNumber)) {
-    //     // Exclude the specified numbers
-    //     continue;
-    //   }
-    //   if (!randomNumbers.includes(randomNumber)) {
-    //     randomNumbers.push(randomNumber);
-    //   }
-    // }
+    while (randomNumbers.length < 6) {
+      const randomNumber = Math.floor(Math.random() * 45) + 1;
 
-    // // Sort the numbers in ascending order
-    // randomNumbers.sort((a, b) => a - b);
+      if (this.condition.isExclude && this.condition.excludedNumbers.includes(randomNumber)) {
+        continue;
+      }
 
-    // // Check if the numbers already exist in the database
-    // const existingLottery = await this.lotteryDB.findLotteryByNumbers(randomNumbers);
-    // if (existingLottery) {
-    //   // If the numbers already exist, generate new numbers
-    //   return this.getRandomNumbers(condition);
-    // }
+      if (!randomNumbers.includes(randomNumber)) {
+        randomNumbers.push(randomNumber);
+      }
+    }
 
-    // return randomNumbers;
-    return [2, 4, 6, 8, 10, 12]; // Placeholder for testing
+    return randomNumbers.sort((a, b) => a - b);
   }
 
   //============================
@@ -140,13 +106,12 @@ export class LotteryService extends Observable {
     return this.condition.isInclude;
   }
 
-  public getIncludedNumberString() {
-    return this.condition.includedNumberString;
+  public getIncludedNumbers() {
+    return this.condition.includedNumbers;
   }
 
-  public setIncludedNumberString(value: string) {
-    if (!this.isNumberStringValid(value)) return;
-    this.condition.includedNumberString = value;
+  public setIncludedNumbers(value: number[]) {
+    this.condition.includedNumbers = value;
     this.notify();
   }
 
@@ -160,13 +125,12 @@ export class LotteryService extends Observable {
     return this.condition.isExclude;
   }
 
-  public getExcludedNumberString() {
-    return this.condition.excludedNumberString;
+  public getExcludedNumbers() {
+    return this.condition.excludedNumbers;
   }
 
-  public setExcludedNumberString(value: string) {
-    if (!this.isNumberStringValid(value)) return;
-    this.condition.excludedNumberString = value;
+  public setExcludedNumbers(value: number[]) {
+    this.condition.excludedNumbers = value;
     this.notify();
   }
 
