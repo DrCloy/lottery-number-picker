@@ -1,14 +1,6 @@
 import { di } from "~/di";
-import type { Route } from "./+types/home";
 import LotteryCard from "~/components/LotteryCard";
 import { useObservable } from "~/useObservable";
-
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "로또 번호 자동 생성하기" },
-    { name: "description", content: "로또 번호 자동 생성 페이지" },
-  ];
-}
 
 export default function Home() {
   const lotteryService = useObservable(di.lotteryService);

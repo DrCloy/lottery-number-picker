@@ -1,4 +1,12 @@
 import { NavLink, Outlet } from "react-router";
+import type { Route } from "./+types/layout";
+
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: "로또 번호 자동 생성하기" },
+    { name: "description", content: "로또 번호 자동 생성 페이지" },
+  ];
+}
 
 export default function Layout() {
   return (

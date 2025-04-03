@@ -1,15 +1,6 @@
-import { Form } from "react-router";
-import type { Route } from "./+types/random";
 import { useObservable } from "~/useObservable";
 import { di } from "~/di";
 import LotteryBall from "~/components/LotteryBall";
-
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
-  ];
-}
 
 const LotteryNumberSelect = ({
   value,
